@@ -1,0 +1,64 @@
+<DOCTYPE html>
+<html>
+	<head>
+		    <title>Map Location Picker</title>
+			    <meta charset="utf-8" />
+				    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+					    
+					    <!-- Leaflet CSS -->
+						    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+							    <style>
+        #map { height: 500px; }
+		    </style>
+	</head>
+	<body>
+
+		<!--<h3>Select a Location on Map</h3>
+		<div id="map"></div>
+		<p>Latitude: <span id="lat"></span></p>
+		<p>Longitude: <span id="lng"></span></p>
+
+		 Leaflet JS --> 
+		 <form id="coordForm" method="POST" >	
+			 {% csrf_token %}
+
+			 <p>Title</p>
+				{{ form.title }} <br>
+			 <p>Description</p>
+			 {{ form.description }}<br>
+			<p>Date</p>
+			{{ form.date }}<br>
+			<p>Time</p>
+			{{ form.time }}<br>
+			<p>latitude:</p>
+			{{ form.lat }} <br>
+			<p>longitude:</p>
+			{{ form.lon }}
+			<button type= submit> Submit </button>
+		 </form>
+
+			 <div id="map" style="height: 400px;"></div>
+
+			 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+		 <script>
+			     const map = L.map('map').setView([51.505, -0.09], 13);
+
+				     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+						         attribution: 'Map data &copy; OpenStreetMap contributors'
+						     }).addTo(map);
+
+				     map.on('click', function(e) {
+						         const lat = e.latlng.lat;
+						         const lng = e.latlng.lng;
+
+						         // Fill form and submit
+						         document.getElementById('lat').value = lat;
+						         document.getElementById('lon').value = lng;
+						     });
+		 </script>
+	
+
+	</body>
+</html>
+
