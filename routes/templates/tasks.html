@@ -101,8 +101,8 @@
 				<div class="task-details">{{ task.description }} | {{ task.date }} | {{ task.time }} </div>
 			  </div>
 			  <div class="task-actions">
-				<button>Edit</button>
-			    <button>Delete</button>
+				  <button onclick= 'window.location.href = "http://127.0.0.1:8000/edit/{{task.id}}/" ' >Edit</button>
+				  <button onclick= 'window.location.href = "http://127.0.0.1:8000/delete/{{task.id}}/" ' >Delete</button>
 			  </div>
 		  </div>
 		  {% endfor %}

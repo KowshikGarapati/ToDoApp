@@ -1,7 +1,7 @@
 <DOCTYPE html>
 <html>
 	<head>
-		    <title>Map Location Picker</title>
+		    <title>Create New Task</title>
 			    <meta charset="utf-8" />
 				    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 					    
@@ -18,7 +18,9 @@
 		<p>Latitude: <span id="lat"></span></p>
 		<p>Longitude: <span id="lng"></span></p>
 
-		 Leaflet JS --> 
+		 Leaflet JS -->
+		 <h2>Create New Task</h2><br>
+
 		 <form id="coordForm" method="POST" >	
 			 {% csrf_token %}
 
@@ -33,16 +35,24 @@
 			<p>latitude:</p>
 			{{ form.lat }} <br>
 			<p>longitude:</p>
-			{{ form.lon }}
-			<button type= submit> Submit </button>
+			{{ form.lon }} <br>
+			<div align= "center" style="padding: 20px;" > 
+			<input type= "submit" value="Submit" ></input>
+			</div>
 		 </form>
 
-			 <div id="map" style="height: 400px;"></div>
+		 <div id="map" style="height: 400px;"></div>
+		 <div style="height: 80px;"> </div>	
+
+		 <div style="height: 200px;" align="center">
+			<button onclick= 'window.location.href = "http://127.0.0.1:8000/    " ' >All Tasks</button>
+		 </div>
+		
 
 			 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 		 <script>
-			     const map = L.map('map').setView([51.505, -0.09], 13);
+			     const map = L.map('map').setView([17.3850, 78.4867], 12);
 
 				     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 						         attribution: 'Map data &copy; OpenStreetMap contributors'
