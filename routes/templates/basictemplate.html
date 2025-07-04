@@ -1,42 +1,8 @@
-<!--<DOCTYPE html> 
-<html>                                                              
-	<head>
-		<title>Map Location Picker</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-widt    h, initial-scale=1.0">         -->                                      
-		<!-- Leaflet CSS -->
-		<!--<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-	    <style>
-            #map { height: 500px; }                       
-	    </style>                                                   
-	</head>
-	<body>  -->                                                       
-		<!--<h3>Select a Location on Map</h3>
-		<div id="map"></div>                                 
-		<p>Latitude: <span id="lat"></span></p>                   
-		<p>Longitude: <span id="lng"></span></p>       
-		Leaflet JS --> 
-
-		<!-- {% for task in tasks %}
-		<div  style="width: 100%; height: 100px; margin-top: 10px;margin-right:150px; padding: 50px;">
-			<p> {{task.date}} {{task.time}}</p><br>
-			<p>{{task.title}}</p><br>
-			<p>{{task.description}}</p><br>
-			<p> {{task.lat}} ,  {{task.lon}}</p><br>
-
-		</div> 
-		{% endfor %} 
-
-	</body>
-</html> -->
-
 <!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>Task List</title>
-		<meta charset="UTF-8">
+<html>
+<head>
+<title>W3.CSS Template</title>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
@@ -51,64 +17,8 @@ body, h1,h2,h3,h4,h5,h6 {font-family: "Montserrat", sans-serif}
 /* Remove margins from "page content" on small screens */
 @media only screen and (max-width: 600px) {#main {margin-left: 0}}
 </style>
-
-		<style>
-            body {
-		      font-family: Arial, sans-serif;
-			  background: #f5f5f5;
-			  padding: 20px;
-			}
-
-	        .task {
-			    width: 95%;
-				height: 2cm;
-				background-color: white;
-				border: 1px solid #ccc;
-				border-radius: 8px;
-				margin-bottom: 15px;
-				padding: 10px 15px;
-				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-			}
-
-		    .task-info {
-				flex-grow: 1;
-			}
-
-			.task-title {
-				font-weight: bold;
-				margin-bottom: 3px;
-			}
-
-			.task-details {
-				font-size: 0.9em;
-				color: #555;
-			}
-
-			.task-actions {
-				display: flex;
-				flex-direction: column;
-				gap: 5px;
-				margin-left: 20px;
-			}
-
-			.task-actions button {
-				padding: 5px 10px;
-				border: none;
-				border-radius: 5px;
-				cursor: pointer;
-				background-color: #007BFF;
-				color: white;
-			}
-
-			.task-actions button:hover {
-				background-color: #0056b3;
-			}
-	   </style>
-    </head>
-	<body class="w3-white">
+</head>
+<body class="w3-white">
 
 <!-- Icon Bar (Sidebar - hidden on small screens) -->
 <nav class="w3-sidebar w3-bar-block w3-small w3-hide-small w3-center">
@@ -149,21 +59,7 @@ body, h1,h2,h3,h4,h5,h6 {font-family: "Montserrat", sans-serif}
 <!-- Page Content -->
 <div class="w3-padding-large" id="main">
   <!-- Header/Home -->
-	{% for task in tasks %}
 
-		  <div class="task">
-			<div class="task-info">
-				<div class="task-title">{{ task.title }}</div>
-				<div class="task-details">{{ task.description }} | {{ task.date }} | {{ task.time }} </div>
-			  </div>
-			  <div class="task-actions">
-				  <button onclick= 'window.location.href = "http://127.0.0.1:8000/edit/{{task.id}}/" ' >Edit</button>
-				  <button onclick= 'window.location.href = "http://127.0.0.1:8000/delete/{{task.id}}/" ' >Delete</button>
-			  </div>
-		  </div>
-		  {% endfor %}
-
-		  <button onclick= "window.location.href = 'http://127.0.0.1:8000/newtask/'  ">New Task</button>
     <!-- Footer -->
   <footer class="w3-content w3-padding-64 w3-text-grey w3-xlarge">
     <i class="fa fa-facebook-official w3-hover-opacity"></i>
@@ -179,7 +75,17 @@ body, h1,h2,h3,h4,h5,h6 {font-family: "Montserrat", sans-serif}
 </div>
 
 </body>
-
-
-
 </html>
+<!--   <div class="task">
+			  <div class="task-info">
+				  <div class="task-title">task 3 for koshik id1(now edited)</div>
+				  <div class="task-details">description for task3 for kowshik | May 30, 2025 | 7:21 p.m. </div>
+			  </div>
+			  <div class="task-actions">
+				  <button onclick= 'window.location.href = "http://127.0.0.1:8000/edit/10/" ' >Edit</button>
+				  <button onclick= 'window.location.href = "http://127.0.0.1:8000/delete/10/" ' >Delete</button>
+			  </div>
+		  </div>
+
+
+		  <button onclick= "window.location.href = 'http://127.0.0.1:8000/newtask/'  ">New Task</button> -->

@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+<body>
+    <form action="emailverify/" method="GET">
+        {% csrf_token %}
+        <input type="text" placeholder="enter otp" id="otp" name="otp" >
+        <button type="submit">verify</button>
+    </form>
+</body>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Live Location Tracker</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+    }
+    #status {
+      margin-bottom: 10px;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>Live GPS Tracker</h1>
+  <p id="status">Requesting location...</p>
+  <p><strong>Latitude:</strong> <span id="lat">--</span></p>
+  <p><strong>Longitude:</strong> <span id="lng">--</span></p>
+  <p><strong>Accuracy:</strong> <span id="accuracy">--</span> meters</p>
+  <p><strong>Speed:</strong> <span id="speed">--</span> m/s</p>
+  <p><strong>Heading:</strong> <span id="heading">--</span>°</p>
+  <p><strong>Last Updated:</strong> <span id="timestamp">--</span></p>
+
+  <script>
+    if ("geolocation" in navigator) {
+      const latSpan = document.getElementById("lat");
+      const lngSpan = document.getElementById("lng");
+      const accSpan = document.getElementById("accuracy");
+      const spdSpan = document.getElementById("speed");
+      const hdgSpan = document.getElementById("heading");
+      const tsSpan = document.getElementById("timestamp");
+      const status = document.getElementById("status");
+
+      navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude, accuracy, speed, heading } = position.coords;
+          const timestamp = new Date(position.timestamp).toLocaleTimeString();
+
+          latSpan.textContent = latitude.toFixed(6);
+          lngSpan.textContent = longitude.toFixed(6);
+          accSpan.textContent = accuracy;
+          spdSpan.textContent = speed !== null ? speed.toFixed(2) : "--";
+          hdgSpan.textContent = heading !== null ? heading.toFixed(2) : "--";
+          tsSpan.textContent = timestamp;
+          status.textContent = "Live location tracking...";
+        },
+        (err) => {
+          console.error("Error watching position:", err);
+          status.textContent = "Unable to get location: " + err.message;
+          status.style.color = "red";
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 0,
+          timeout: 10000
+        }
+      );
+    } else {
+      document.getElementById("status").textContent = "Geolocation not supported.";
+    }
+  </script>
+</body>
+</html>
