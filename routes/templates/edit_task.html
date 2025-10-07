@@ -1,5 +1,186 @@
-<form method="post">
-	  {% csrf_token %}
-	    {{ form.as_p }}
-		  <button type="submit">Save Changes</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Task</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <!-- W3.CSS + Fonts -->
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body, h1, h2, h3, h4, h5, h6 {
+      font-family: "Montserrat", sans-serif;
+    }
+
+    body {
+      background-color: #f5f5f5;
+      margin: 0;
+    }
+
+    .w3-sidebar {
+      width: 120px;
+      background: #222;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+    }
+
+    #main {
+      margin-left: 120px;
+      padding: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .w3-sidebar {
+        display: none !important;
+      }
+
+      #main {
+        margin-left: 0;
+      }
+    }
+
+    form {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: auto;
+    }
+
+    form p {
+      margin: 10px 0 5px;
+      font-weight: bold;
+    }
+
+    input[type="submit"] {
+      margin-top: 20px;
+      background-color: #007BFF;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+
+    #map {
+      height: 400px;
+      max-width: 600px;
+      margin: 30px auto;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .task-nav-btn {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .task-nav-btn button {
+      background-color: #28a745;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .task-nav-btn button:hover {
+      background-color: #1e7e34;
+    }
+  </style>
+</head>
+
+<body class="w3-white">
+
+<!-- Sidebar -->
+<nav class="w3-sidebar w3-bar-block w3-small w3-hide-small w3-center">
+  <img src="" style="width:100%">
+  <a href="#" class="w3-bar-item w3-button w3-padding-large w3-black">
+    <i class="fa fa-home w3-xxlarge"></i>
+    <p>HOME</p>
+  </a>
+  <a href="#about" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+    <i class="fa fa-user w3-xxlarge"></i>
+    <p>ABOUT</p>
+  </a>
+  <a href="#photos" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+    <i class="fa fa-eye w3-xxlarge"></i>
+    <p>PHOTOS</p>
+  </a>
+  <a href="#contact" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+    <i class="fa fa-envelope w3-xxlarge"></i>
+    <p>CONTACT</p>
+  </a>
+  <a href="{% url 'logout' %}" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+    <i class="fa fa-sign-out w3-xxlarge"></i>
+    <p>LOGOUT</p>
+  </a>
+</nav>
+
+<!-- Main Content -->
+<div class="w3-padding-large" id="main">
+  <h2>Edit Task</h2>
+
+  <form id="coordForm" method="POST">
+    {% csrf_token %}
+    <p>Title</p>
+    {{ form.title }}
+    <p>Description</p>
+    {{ form.description }}
+    <p>Date</p>
+    {{ form.date }}
+    <p>Time</p>
+    {{ form.time }}
+    <p>Latitude:</p>
+    {{ form.lat }}
+    <p>Longitude:</p>
+    {{ form.lon }}
+    <div>
+      <input type="submit" value="Submit" />
+    </div>
+  </form>
+
+  <div id="map"></div>
+
+  <div class="task-nav-btn">
+    <button onclick='window.location.href = "http://127.0.0.1:8000/"'>All Tasks</button>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([17.3850, 78.4867], 12);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'Map data &copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  map.on('click', function(e) {
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+
+    // These must match the input field IDs rendered by {{ form.lat }} and {{ form.lon }}
+    document.getElementById('lat').value = lat;
+    document.getElementById('lon').value = lng;
+  });
+</script>
+
+</body>
+</html>

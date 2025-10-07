@@ -17,6 +17,42 @@ body, h1,h2,h3,h4,h5,h6 {font-family: "Montserrat", sans-serif}
 /* Remove margins from "page content" on small screens */
 @media only screen and (max-width: 600px) {#main {margin-left: 0}}
 </style>
+  <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/static/firebase-messaging-sw.js')
+    .then(reg => {
+      console.log('Service Worker registered.', reg);
+
+      // Subscribe for push notifications
+      reg.pushManager.getSubscription().then(async sub => {
+        if (!sub) {
+          const vapidPublicKey = "BMov4lzyLO5ZFKs5uuCXHtmE0yo6Z7-cTpth3oQVrgWroh07h0lQM6neggYlc8AGd5vj0cunf_QwmB0Gqhgb44Q";
+          const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: convertedVapidKey
+          });
+
+          // Send subscription to Django
+          fetch("/save_subscription/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(sub)
+          });
+        }
+      });
+    });
+}
+
+// Helper to convert VAPID key
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+}
+</script>
+
 </head>
 <body class="w3-white">
 

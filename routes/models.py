@@ -28,4 +28,13 @@ class Task(models.Model):
     lon = models.FloatField(blank = False)
     #location = models.PointField()
 
+class PushSubscription(models.Model):
+    endpoint = models.TextField(unique=True)
+    auth = models.CharField(max_length=255)
+    p256dh = models.CharField(max_length=255)
+    user = models.ForeignKey("User", on_delete=models.CASCADE, null=True, blank=True)
 
+    objects = models.Manager()
+
+    def __str__(self):
+        return self.endpoint[:50]

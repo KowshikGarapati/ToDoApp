@@ -18,4 +18,8 @@ urlpatterns = [
        path('signup/register/sendverificationemail/<str:recipient>', views.send_verification_email, name='sendverificationemail'),
        path('signup/register/verifyotp', views.verifyotp, name='verifyotp'),#path("", views., name=""),
        path('gps/', views.gpstesting),
+       path("send_notification/", views.send_notification, name="send_notification"),
+       path('save_subscription/', views.save_subscription, name='save_subscription'),
+       path('webpush/save_information/', views.save_subscription, name='save_information'),
+       path("service_worker.js", views.service_worker, name="service_worker"),
     ]

@@ -1,9 +1,18 @@
 from django.shortcuts import render , redirect, get_object_or_404 
-from django.http import HttpResponse
+from django.http import HttpResponse , JsonResponse
 from django.urls import reverse
-from .models import Task , User
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from .models import Task , User, PushSubscription
 from .forms import TaskForm
-import random, requests
+import random, requests, json
+from webpush import send_user_notification
+from webpush.models import PushInformation
+from django.http import FileResponse
+import os
+from django.conf import settings
+from pywebpush import webpush, WebPushException
 
 # Create your views here.
 
@@ -139,5 +148,105 @@ def logout(request):
     request.session.flush()
     return redirect("checkifuserloggedin")
 
+VAPID_PRIVATE_KEY = "5UMfwX2ybkCYjwZxlVLvLhURiYPNwyeAIkI0BtwmYKU"
+VAPID_PUBLIC_KEY = "BMov4lzyLO5ZFKs5uuCXHtmE0yo6Z7-cTpth3oQVrgWroh07h0lQM6neggYlc8AGd5vj0cunf_QwmB0Gqhgb44Q"
+
 def gpstesting(request):
-    return render(request, "GPSTest.html")
+    context = {
+        "vapid_public_key": "BMov4lzyLO5ZFKs5uuCXHtmE0yo6Z7-cTpth3oQVrgWroh07h0lQM6neggYlc8AGd5vj0cunf_QwmB0Gqhgb44Q"  # Same as in settings
+    }
+    return render(request, "GPSTest.html", context)
+
+def send_notification(request):
+    payload = {
+        "title": "🚀 Django Push",
+        "body": "Your web push notification is working perfectly!",
+        "icon": "/static/icons/notification.png"
+    }
+
+    subs = PushSubscription.objects.all()
+    if not subs.exists():
+        return JsonResponse({"error": "No subscriptions found"}, status=404)
+
+    for sub in subs:
+        try:
+            webpush(
+                subscription_info={
+                    "endpoint": sub.endpoint,
+                    "keys": {
+                        "p256dh": sub.p256dh,
+                        "auth": sub.auth
+                    }
+                },
+                data=json.dumps(payload),
+                vapid_private_key=VAPID_PRIVATE_KEY,
+                vapid_claims={
+                    "sub": "mailto:kowshikgarapati@gmail.com"
+                }
+            )
+            print(f"✅ Push sent to: {sub.endpoint[:40]}...")
+        except WebPushException as e:
+            print(f"❌ Push failed for {sub.endpoint[:40]}: {repr(e)}")
+            if e.response and e.response.json():
+                print("Response:", e.response.json())
+
+    return JsonResponse({"status": "Notifications sent"})
+
+def save_info(request):
+    if request.method == 'POST':
+        try:
+            subscription_data = json.loads(request.body)
+
+            endpoint = subscription_data['endpoint']
+            keys = subscription_data.get('keys', {})
+
+            # Save the subscription in your database (no user here)
+            PushSubscription.objects.update_or_create(
+                endpoint=endpoint,
+                defaults={
+                    'auth': keys.get('auth', ''),
+                    'p256dh': keys.get('p256dh', '')
+                }
+            )
+            return JsonResponse({'status': 'Subscription saved'})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+@csrf_exempt
+def save_subscription(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        endpoint = data.get("endpoint")
+        keys = data.get("keys", {})
+
+        if endpoint and "auth" in keys and "p256dh" in keys:
+            PushSubscription.objects.update_or_create(
+                endpoint=endpoint,
+                defaults={
+                    "auth": keys["auth"],
+                    "p256dh": keys["p256dh"]
+                }
+            )
+            return JsonResponse({"status": "saved"})
+        else:
+            return JsonResponse({"error": "Missing keys"}, status=400)
+
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+
+@csrf_exempt
+def save_information(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        # You can log this or save it however you want
+        print("Subscription data:", data)
+        
+        # Save logic here, or just acknowledge
+        return JsonResponse({"status": "Subscription saved"})
+    return JsonResponse({"error": "Invalid method"}, status=400)
+
+def service_worker(request):
+    sw_path = os.path.join(settings.BASE_DIR, r"routes\static\service-worker.js")
+    return FileResponse(open(sw_path, "rb"), content_type="application/javascript")

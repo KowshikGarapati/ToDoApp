@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/ToDoApp.iml" filepath="$PROJECT_DIR$/.idea/ToDoApp.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../devcolab-main/.idea/devcolab-main.iml" filepath="$PROJECT_DIR$/../devcolab-main/.idea/devcolab-main.iml" />
     </modules>
   </component>
 </project>

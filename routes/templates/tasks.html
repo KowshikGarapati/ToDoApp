@@ -1,118 +1,136 @@
-<!--<DOCTYPE html> 
-<html>                                                              
-	<head>
-		<title>Map Location Picker</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-widt    h, initial-scale=1.0">         -->                                      
-		<!-- Leaflet CSS -->
-		<!--<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-	    <style>
-            #map { height: 500px; }                       
-	    </style>                                                   
-	</head>
-	<body>  -->                                                       
-		<!--<h3>Select a Location on Map</h3>
-		<div id="map"></div>                                 
-		<p>Latitude: <span id="lat"></span></p>                   
-		<p>Longitude: <span id="lng"></span></p>       
-		Leaflet JS --> 
-
-		<!-- {% for task in tasks %}
-		<div  style="width: 100%; height: 100px; margin-top: 10px;margin-right:150px; padding: 50px;">
-			<p> {{task.date}} {{task.time}}</p><br>
-			<p>{{task.title}}</p><br>
-			<p>{{task.description}}</p><br>
-			<p> {{task.lat}} ,  {{task.lon}}</p><br>
-
-		</div> 
-		{% endfor %} 
-
-	</body>
-</html> -->
-
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>Task List</title>
-		<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<style>
-body, h1,h2,h3,h4,h5,h6 {font-family: "Montserrat", sans-serif}
-.w3-row-padding img {margin-bottom: 12px}
-/* Set the width of the sidebar to 120px */
-.w3-sidebar {width: 120px;background: #222;}
-/* Add a left margin to the "page content" that matches the width of the sidebar (120px) */
-#main {margin-left: 120px}
-/* Remove margins from "page content" on small screens */
-@media only screen and (max-width: 600px) {#main {margin-left: 0}}
-</style>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Task List</title>
 
-		<style>
-            body {
-		      font-family: Arial, sans-serif;
-			  background: #f5f5f5;
-			  padding: 20px;
-			}
+  <!-- W3.CSS and Font Awesome -->
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
 
-	        .task {
-			    width: 95%;
-				height: 2cm;
-				background-color: white;
-				border: 1px solid #ccc;
-				border-radius: 8px;
-				margin-bottom: 15px;
-				padding: 10px 15px;
-				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-			}
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-		    .task-info {
-				flex-grow: 1;
-			}
+    body, h1, h2, h3, h4, h5, h6 {
+      font-family: "Montserrat", sans-serif;
+    }
 
-			.task-title {
-				font-weight: bold;
-				margin-bottom: 3px;
-			}
+    body {
+      background: #f5f5f5;
+      margin: 0;
+    }
 
-			.task-details {
-				font-size: 0.9em;
-				color: #555;
-			}
+    .w3-sidebar {
+      width: 120px;
+      background: #222;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+    }
 
-			.task-actions {
-				display: flex;
-				flex-direction: column;
-				gap: 5px;
-				margin-left: 20px;
-			}
+    #main {
+      margin-left: 120px;
+      padding: 16px;
+    }
 
-			.task-actions button {
-				padding: 5px 10px;
-				border: none;
-				border-radius: 5px;
-				cursor: pointer;
-				background-color: #007BFF;
-				color: white;
-			}
+    @media only screen and (max-width: 768px) {
+      .w3-sidebar {
+        display: none !important;
+      }
 
-			.task-actions button:hover {
-				background-color: #0056b3;
-			}
-	   </style>
-    </head>
-	<body class="w3-white">
+      #main {
+        margin-left: 0;
+      }
 
-<!-- Icon Bar (Sidebar - hidden on small screens) -->
+      .task-actions {
+        flex-direction: row;
+        justify-content: flex-end;
+        gap: 10px;
+        width: 100%;
+        margin-top: 10px;
+      }
+    }
+
+    .task {
+      width: 100%;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      padding: 12px 16px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .task-info {
+      flex-grow: 1;
+      min-width: 200px;
+    }
+
+    .task-title {
+      font-weight: bold;
+      font-size: 1.1em;
+      margin-bottom: 5px;
+    }
+
+    .task-details {
+      font-size: 0.9em;
+      color: #555;
+      word-wrap: break-word;
+    }
+
+    .task-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-left: 16px;
+    }
+
+    .task-actions button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #007BFF;
+      color: white;
+    }
+
+    .task-actions button:hover {
+      background-color: #0056b3;
+    }
+
+    .w3-top .w3-bar {
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .new-task-button {
+      margin-top: 20px;
+      padding: 10px 16px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .new-task-button:hover {
+      background-color: #1e7e34;
+    }
+  </style>
+</head>
+<body class="w3-white">
+
+<!-- Sidebar -->
 <nav class="w3-sidebar w3-bar-block w3-small w3-hide-small w3-center">
-  <!-- Avatar image in top left corner -->
   <img src="" style="width:100%">
   <a href="#" class="w3-bar-item w3-button w3-padding-large w3-black">
     <i class="fa fa-home w3-xxlarge"></i>
@@ -131,12 +149,12 @@ body, h1,h2,h3,h4,h5,h6 {font-family: "Montserrat", sans-serif}
     <p>CONTACT</p>
   </a>
   <a href="{% url 'logout' %}" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
-    <i class="fa fa-logout w3-xxlarge"></i>
+    <i class="fa fa-sign-out w3-xxlarge"></i>
     <p>LOGOUT</p>
   </a>
 </nav>
 
-<!-- Navbar on small screens (Hidden on medium and large screens) -->
+<!-- Top Navbar for Small Screens -->
 <div class="w3-top w3-hide-large w3-hide-medium" id="myNavbar">
   <div class="w3-bar w3-black w3-opacity w3-hover-opacity-off w3-center w3-small">
     <a href="#" class="w3-bar-item w3-button" style="width:25% !important">HOME</a>
@@ -146,25 +164,24 @@ body, h1,h2,h3,h4,h5,h6 {font-family: "Montserrat", sans-serif}
   </div>
 </div>
 
-<!-- Page Content -->
+<!-- Main Page Content -->
 <div class="w3-padding-large" id="main">
-  <!-- Header/Home -->
-	{% for task in tasks %}
+  {% for task in tasks %}
+    <div class="task">
+      <div class="task-info">
+        <div class="task-title">{{ task.title }}</div>
+        <div class="task-details">{{ task.description }} | {{ task.date }} | {{ task.time }}</div>
+      </div>
+      <div class="task-actions">
+        <button onclick="window.location.href = 'http://127.0.0.1:8000/edit/{{ task.id }}/'">Edit</button>
+        <button onclick="window.location.href = 'http://127.0.0.1:8000/delete/{{ task.id }}/'">Delete</button>
+      </div>
+    </div>
+  {% endfor %}
 
-		  <div class="task">
-			<div class="task-info">
-				<div class="task-title">{{ task.title }}</div>
-				<div class="task-details">{{ task.description }} | {{ task.date }} | {{ task.time }} </div>
-			  </div>
-			  <div class="task-actions">
-				  <button onclick= 'window.location.href = "http://127.0.0.1:8000/edit/{{task.id}}/" ' >Edit</button>
-				  <button onclick= 'window.location.href = "http://127.0.0.1:8000/delete/{{task.id}}/" ' >Delete</button>
-			  </div>
-		  </div>
-		  {% endfor %}
+  <button class="new-task-button" onclick="window.location.href = 'http://127.0.0.1:8000/newtask/'">New Task</button>
 
-		  <button onclick= "window.location.href = 'http://127.0.0.1:8000/newtask/'  ">New Task</button>
-    <!-- Footer -->
+  <!-- Footer -->
   <footer class="w3-content w3-padding-64 w3-text-grey w3-xlarge">
     <i class="fa fa-facebook-official w3-hover-opacity"></i>
     <i class="fa fa-instagram w3-hover-opacity"></i>
@@ -173,13 +190,8 @@ body, h1,h2,h3,h4,h5,h6 {font-family: "Montserrat", sans-serif}
     <i class="fa fa-twitter w3-hover-opacity"></i>
     <i class="fa fa-linkedin w3-hover-opacity"></i>
     <p class="w3-medium">Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank" class="w3-hover-text-green">w3.css</a></p>
-  <!-- End footer -->
   </footer>
-
 </div>
 
 </body>
-
-
-
 </html>

@@ -35,6 +35,7 @@ CSRF_TRUSTED_ORIGINS = ["https://*.replit.dev", "https://*.replit.app", "http://
 
 INSTALLED_APPS = [
     'routes',
+    'webpush',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -125,3 +126,11 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": "BMov4lzyLO5ZFKs5uuCXHtmE0yo6Z7-cTpth3oQVrgWroh07h0lQM6neggYlc8AGd5vj0cunf_QwmB0Gqhgb44Q",
+    "VAPID_PRIVATE_KEY": "5UMfwX2ybkCYjwZxlVLvLhURiYPNwyeAIkI0BtwmYKU",
+    "VAPID_ADMIN_EMAIL": "kowshikgarapati@gmail.com"
+}
+
+LOGIN_URL = '/login/'   # or wherever your login view lives

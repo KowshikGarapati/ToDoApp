@@ -21,3 +21,7 @@ class TaskForm(forms.ModelForm):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.fields['date'].initial = timezone.now().date()
+            self.fields['title'].required = True
+            self.fields['description'].required = True
+            self.fields['date'].required = True
+            self.fields['time'].required = True
