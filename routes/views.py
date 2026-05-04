@@ -1,76 +1,71 @@
-from django.shortcuts import render , redirect, get_object_or_404 
-from django.http import HttpResponse , JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from .models import Task , User, PushSubscription
-from .forms import TaskForm
-import random, requests, json
-from webpush import send_user_notification
-from webpush.models import PushInformation
-from django.http import FileResponse
-import os
 from django.conf import settings
+from .models import Task, User, PushSubscription
+from .forms import TaskForm
+
+import json
+import random
+import requests
+import os
+
+# Web Push
 from pywebpush import webpush, WebPushException
 
-# Create your views here.
+# =========================
+# TASK VIEWS
+# =========================
 
 def task_list(request):
-    return render(request, 'tasks.html', {"tasks" : Task.objects.filter(user_id = request.session.get("id"))} )
+    """Show all tasks for logged-in user"""
+    user_id = request.session.get("id")
+    return render(request, 'tasks.html', {
+        "tasks": Task.objects.filter(user_id=user_id)
+    })
 
-def home(request):
-    pass
-
-
-def savenewtask(request):
-    if request.method == 'POST':
-        form = TaskForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('task_list')
-            
-    return HttpResponse(form.cleaned_data['date'])
 
 def newtask(request):
+    """Create new task"""
     if request.method == 'POST':
         form = TaskForm(request.POST)
         if form.is_valid():
             task = form.save(commit=False)
-            task.user = User.objects.get(id= request.session.get("id"))
+            task.user = User.objects.get(id=request.session.get("id"))
             task.save()
             return redirect("task_list")
     else:
         form = TaskForm()
+
     return render(request, 'newtask.html', {'form': form})
 
+
 def edit_task(request, task_id):
+    """Edit existing task"""
     task = get_object_or_404(Task, id=task_id)
+
     if request.method == 'POST':
         form = TaskForm(request.POST, instance=task)
         if form.is_valid():
             form.save()
-            return redirect('task_list')  # Replace with your list view name
+            return redirect('task_list')
     else:
         form = TaskForm(instance=task)
+
     return render(request, 'edit_task.html', {'form': form})
 
 
-# views.py
 def delete_task(request, task_id):
+    """Delete a task"""
     task = get_object_or_404(Task, id=task_id)
     task.delete()
     return redirect('task_list')
-    #return render(request, 'confirm_delete.html', {'task': task})
 
-#now the user implementation type thingy
 
-def check_if_there_is_any_user_already_logged_in(request):
-    loggedin_id = request.session.get("id")
-    if loggedin_id :
-        return redirect("tasks/")
-    else:
-        return redirect("login/")
+# =========================
+# AUTH (BASIC - NOT SECURE)
+# =========================
 
 def signup(request):
     return render(request, "register.html")
@@ -85,90 +80,165 @@ def register(request):
         if newemail in User.objects.values_list('email', flat=True):
             return HttpResponse(b'email already exists')
         else:
-            return redirect('sendverificationemail', recipient=newemail)
-        return redirect('/emailverify')
+            return redirect('send_verification_email', recipient=newemail)
+        return redirect('/verify-email')
     signup_url = reverse('signup')
     return redirect(signup_url)
 
 def login(request):
     return render(request, 'login.html')
 
+
 def verify(request):
-    Username = request.POST.get("username")
-    Password = request.POST.get("password")
+    """Simple login check (⚠ NOT secure, plain password)"""
+    username = request.POST.get("username")
+    password = request.POST.get("password")
+
     try:
-        user = User.objects.get(name = Username, password = Password)
+        user = User.objects.get(name=username, password=password)
         request.session["id"] = user.id
         return redirect('/')
-    except:
+    except User.DoesNotExist:
         return redirect("login")
 
-
-otpToBeChecked = None
-
-def send_verification_email(request, recipient):
-    otp = random.randint(10000, 99999)
-    global otpToBeChecked
-    otpToBeChecked = otp
-    API_KEY = "D1F821EF57B5634978B993DF2E95075C386A95F08D2A725334E8CDC953CC449719065A94D3C498C64FEC4DFFBD6DA1E2" #'5E75CD07C85BBFE9A85475B4EB1E46102E041EEC354083B208B11420D482F6FCA3CDB2B1DC2B060B99F8C2250B03A522'
-    url = "https://api.elasticemail.com/v2/email/send"
-    payload = {
-            'apikey': API_KEY,
-            'subject': 'verification code for your account registration',
-            'from': 'kowshikgarapati@gmail.com',
-            'to': recipient, # request.GET.get('recipient'),
-            'bodyHtml': f'<h1>{otp} is the OTP for your devcolab registration</h1>',
-            'isTransactional': False
-    }
-
-        # Send a POST request to Elastic Email
-    response = requests.post(url, data=payload)
-
-        # Check response
-    if response.status_code == 200:
-        print(f"Email sent successfully! {otp}")
-    else:
-        print("Failed to send email:", response.json())
-    return redirect('verifyotp')
-
-
-def verifyotp(request):
-    return render(request, "otpverification.html")
-
-def emailverify(request):
-    entered_otp = request.GET.get("otp")
-    if entered_otp == str(otpToBeChecked):
-        user_created = User.objects.create(name=newusername, password=newpassword, email=newemail)
-        request.session['id'] = user_created.id
-        return redirect('task_list')
-    else:
-        return redirect('signup')
 
 def logout(request):
     request.session.flush()
     return redirect("checkifuserloggedin")
 
+
+def check_if_there_is_any_user_already_logged_in(request):
+    """Redirect user based on login state"""
+    if request.session.get("id"):
+        return redirect("task_list")
+    return redirect("login")
+
+
+# =========================
+# EMAIL VERIFICATION
+# =========================
+
+otpToBeChecked = None
+newusername = None
+newpassword = None
+newemail = None
+
+
+def send_verification_email(request, recipient):
+    """Send OTP via email"""
+    global otpToBeChecked
+    otpToBeChecked = random.randint(10000, 99999)
+
+    response = requests.post(
+        "https://api.elasticemail.com/v2/email/send",
+        data={
+            'apikey': "YOUR_API_KEY",
+            'subject': 'Verification Code',
+            'from': 'your@email.com',
+            'to': recipient,
+            'bodyHtml': f'<h1>{otpToBeChecked}</h1>'
+        }
+    )
+
+    print("Email sent" + str(otpToBeChecked) if response.status_code == 200 else "Email failed")
+    return redirect('verify_otp')
+
+
+def verifyotp(request):
+    return render(request, "otpverification.html")
+
+
+def emailverify(request):
+    """Verify OTP and create user"""
+    if request.GET.get("otp") == str(otpToBeChecked):
+        user = User.objects.create(
+            name=newusername,
+            password=newpassword,
+            email=newemail
+        )
+        request.session['id'] = user.id
+        return redirect('task_list')
+
+    return redirect('signup')
+
+
+# =========================
+# PUSH NOTIFICATION CONFIG
+# =========================
+
 VAPID_PRIVATE_KEY = "5UMfwX2ybkCYjwZxlVLvLhURiYPNwyeAIkI0BtwmYKU"
 VAPID_PUBLIC_KEY = "BMov4lzyLO5ZFKs5uuCXHtmE0yo6Z7-cTpth3oQVrgWroh07h0lQM6neggYlc8AGd5vj0cunf_QwmB0Gqhgb44Q"
 
+
 def gpstesting(request):
-    context = {
-        "vapid_public_key": "BMov4lzyLO5ZFKs5uuCXHtmE0yo6Z7-cTpth3oQVrgWroh07h0lQM6neggYlc8AGd5vj0cunf_QwmB0Gqhgb44Q"  # Same as in settings
-    }
-    return render(request, "GPSTest.html", context)
+    """Page that initializes service worker & subscription"""
+    return render(request, "GPSTest.html", {
+        "vapid_public_key": VAPID_PUBLIC_KEY
+    })
+
+
+# =========================
+# SAVE SUBSCRIPTION
+# =========================
+
+@csrf_exempt
+def save_subscription(request):
+    """
+    Save subscription linked to logged-in user
+    Flow:
+    Browser → sends endpoint → stored with user
+    """
+    if request.method == "POST":
+        data = json.loads(request.body)
+
+        endpoint = data.get("endpoint")
+        keys = data.get("keys", {})
+        user_id = request.session.get("id")
+
+        if not user_id:
+            return JsonResponse({"error": "User not logged in"}, status=403)
+
+        if endpoint and "auth" in keys and "p256dh" in keys:
+            PushSubscription.objects.update_or_create(
+                endpoint=endpoint,
+                defaults={
+                    "user_id": user_id,
+                    "auth": keys["auth"],
+                    "p256dh": keys["p256dh"]
+                }
+            )
+            return JsonResponse({"status": "saved"})
+
+        return JsonResponse({"error": "Invalid data"}, status=400)
+
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+
+# =========================
+# SEND NOTIFICATION
+# =========================
 
 def send_notification(request):
+    """
+    Send notification ONLY to logged-in user's devices
+    """
+    user_id = request.session.get("id")
+
+    if not user_id:
+        return JsonResponse({"error": "Not logged in"}, status=403)
+
+    subscriptions = PushSubscription.objects.filter(user_id=user_id)
+
+    if not subscriptions.exists():
+        return JsonResponse({"error": "No subscriptions"}, status=404)
+
     payload = {
-        "title": "🚀 Django Push",
-        "body": "Your web push notification is working perfectly!",
+        "title": "🚀 Task Reminder",
+        "body": "You have pending tasks!",
         "icon": "/static/icons/notification.png"
     }
 
-    subs = PushSubscription.objects.all()
-    if not subs.exists():
-        return JsonResponse({"error": "No subscriptions found"}, status=404)
-
-    for sub in subs:
+    for sub in subscriptions:
         try:
             webpush(
                 subscription_info={
@@ -181,72 +251,23 @@ def send_notification(request):
                 data=json.dumps(payload),
                 vapid_private_key=VAPID_PRIVATE_KEY,
                 vapid_claims={
-                    "sub": "mailto:kowshikgarapati@gmail.com"
+                    "sub": "mailto:your@email.com"
                 }
             )
-            print(f"✅ Push sent to: {sub.endpoint[:40]}...")
         except WebPushException as e:
-            print(f"❌ Push failed for {sub.endpoint[:40]}: {repr(e)}")
-            if e.response and e.response.json():
-                print("Response:", e.response.json())
+            print(f"Push failed: {e}")
 
-    return JsonResponse({"status": "Notifications sent"})
-
-def save_info(request):
-    if request.method == 'POST':
-        try:
-            subscription_data = json.loads(request.body)
-
-            endpoint = subscription_data['endpoint']
-            keys = subscription_data.get('keys', {})
-
-            # Save the subscription in your database (no user here)
-            PushSubscription.objects.update_or_create(
-                endpoint=endpoint,
-                defaults={
-                    'auth': keys.get('auth', ''),
-                    'p256dh': keys.get('p256dh', '')
-                }
-            )
-            return JsonResponse({'status': 'Subscription saved'})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-
-    return JsonResponse({'error': 'Invalid method'}, status=405)
-
-@csrf_exempt
-def save_subscription(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        endpoint = data.get("endpoint")
-        keys = data.get("keys", {})
-
-        if endpoint and "auth" in keys and "p256dh" in keys:
-            PushSubscription.objects.update_or_create(
-                endpoint=endpoint,
-                defaults={
-                    "auth": keys["auth"],
-                    "p256dh": keys["p256dh"]
-                }
-            )
-            return JsonResponse({"status": "saved"})
-        else:
-            return JsonResponse({"error": "Missing keys"}, status=400)
-
-    return JsonResponse({"error": "Invalid method"}, status=405)
+    return JsonResponse({"status": "Notification sent"})
 
 
-@csrf_exempt
-def save_information(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        # You can log this or save it however you want
-        print("Subscription data:", data)
-        
-        # Save logic here, or just acknowledge
-        return JsonResponse({"status": "Subscription saved"})
-    return JsonResponse({"error": "Invalid method"}, status=400)
+# =========================
+# SERVICE WORKER
+# =========================
 
 def service_worker(request):
-    sw_path = os.path.join(settings.BASE_DIR, r"routes\static\service-worker.js")
+    """
+    Serve service worker JS file
+    IMPORTANT: Must be at root (/service-worker.js)
+    """
+    sw_path = os.path.join(settings.BASE_DIR, "routes/static/service-worker.js")
     return FileResponse(open(sw_path, "rb"), content_type="application/javascript")

@@ -3,7 +3,7 @@
 <head>
 </head>
 <body>
-    <form action="emailverify/" method="GET">
+    <form action="../verify-email/" method="GET">
         {% csrf_token %}
         <input type="text" placeholder="enter otp" id="otp" name="otp" >
         <button type="submit">verify</button>

@@ -3,7 +3,7 @@ from .models import Task, User, PushSubscription
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'password', 'default_longitude', 'default_latitude', 'email')
+    list_display = ('id', 'name', 'password',  'email')
 
 admin.site.register(Task)
 #admin.site.register(User)

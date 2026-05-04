@@ -1,40 +1,33 @@
 from django.db import models
-from django.conf import settings
-from django.contrib.auth.models import AbstractUser
-#from django.contrib.gis.db import models
 
-# Create your models here.
 class User(models.Model):
-    id = models.AutoField(primary_key=True, unique=True)
-    name = models.CharField(max_length= 150, blank= False)
-    password = models.CharField(max_length= 150, blank= False)
-    default_longitude = models.FloatField(blank=True, null=True)
-    default_latitude = models.FloatField(blank=True, null=True)
+    name = models.CharField(max_length=150)
+    password = models.CharField(max_length=150)
     email = models.EmailField()
 
-    objects = models.Manager()
     def __str__(self):
-        return self.name + self.password
+        return self.name
 
 
 class Task(models.Model):
-    id = models.AutoField(primary_key=True, unique=True)
-    user = models.ForeignKey(User, on_delete = models.CASCADE, related_name = "tasks" , null=True, blank=True )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tasks", null=True, blank=True)
     date = models.DateField()
     time = models.TimeField()
-    title = models.CharField(max_length = 150, blank = False)
-    description = models.TextField(max_length = 300, blank = False)
-    lat = models.FloatField(blank = False)
-    lon = models.FloatField(blank = False)
-    #location = models.PointField()
+    title = models.CharField(max_length=150)
+    description = models.TextField(max_length=300)
+    lat = models.FloatField()
+    lon = models.FloatField()
+
 
 class PushSubscription(models.Model):
+    """
+    Each record represents ONE device/browser
+    linked to a specific user
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     endpoint = models.TextField(unique=True)
     auth = models.CharField(max_length=255)
     p256dh = models.CharField(max_length=255)
-    user = models.ForeignKey("User", on_delete=models.CASCADE, null=True, blank=True)
-
-    objects = models.Manager()
 
     def __str__(self):
-        return self.endpoint[:50]
+        return f"{self.user.name} -> {self.endpoint[:30]}"
