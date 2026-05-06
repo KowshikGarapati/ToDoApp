@@ -3,6 +3,8 @@ from django.http import HttpResponse, JsonResponse, FileResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.db import models
+from django.db.models.functions import Cast
 from .models import Task, User, PushSubscription
 from .forms import TaskForm
 
@@ -20,9 +22,11 @@ from pywebpush import webpush, WebPushException
 
 def task_list(request):
     """Show all tasks for logged-in user"""
-    user_id = request.session.get("id")
+    tasks = Task.objects.filter(user_id = request.session.get("id")).values(
+    "id", "title", "lat", "lon", "description", "date", "time")
     return render(request, 'tasks.html', {
-        "tasks": Task.objects.filter(user_id=user_id)
+        "tasks_json": json.dumps(list(tasks), default = str), 
+        "tasks":tasks
     })
 
 
@@ -259,6 +263,44 @@ def send_notification(request):
 
     return JsonResponse({"status": "Notification sent"})
 
+def send_location_triggered_notification(request, task_id):
+    user_id = request.session.get("id")
+
+    if not user_id:
+        return JsonResponse({"error": "Not logged in"}, status=403)
+
+    subscriptions = PushSubscription.objects.filter(user_id=user_id)
+    task = Task.objects.get(id=task_id)
+
+    if not subscriptions.exists():
+        return JsonResponse({"error": "No subscriptions"}, status=404)
+
+    payload = {
+        "title": task.title,
+        "body": task.description,
+        "icon": "/static/icons/notification.png"
+    }
+
+    for sub in subscriptions:
+        try:
+            webpush(
+                subscription_info={
+                    "endpoint": sub.endpoint,
+                    "keys": {
+                        "p256dh": sub.p256dh,
+                        "auth": sub.auth
+                    }
+                },
+                data=json.dumps(payload),
+                vapid_private_key=VAPID_PRIVATE_KEY,
+                vapid_claims={
+                    "sub": "mailto:your@email.com"
+                }
+            )
+        except WebPushException as e:
+            print(f"Push failed: {e}")
+
+    return JsonResponse({"status": "Notification sent"})
 
 # =========================
 # SERVICE WORKER
