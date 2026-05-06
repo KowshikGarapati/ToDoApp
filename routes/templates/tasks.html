@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -128,7 +129,7 @@
   </style>
 </head>
 <body class="w3-white">
-
+<script src="{% static 'webpush/webpush.js' %}"></script>
 <!-- Sidebar -->
 <nav class="w3-sidebar w3-bar-block w3-small w3-hide-small w3-center">
   <img src="" style="width:100%">
@@ -173,13 +174,13 @@
         <div class="task-details">{{ task.description }} | {{ task.date }} | {{ task.time }}</div>
       </div>
       <div class="task-actions">
-        <button onclick="window.location.href = 'http://127.0.0.1:8000/edit/{{ task.id }}/'">Edit</button>
-        <button onclick="window.location.href = 'http://127.0.0.1:8000/delete/{{ task.id }}/'">Delete</button>
+        <button onclick="window.location.href = 'http://127.0.0.1:8000/tasks/edit/{{ task.id }}/'">Edit</button>
+        <button onclick="window.location.href = 'http://127.0.0.1:8000/tasks/delete/{{ task.id }}/'">Delete</button>
       </div>
     </div>
   {% endfor %}
 
-  <button class="new-task-button" onclick="window.location.href = 'http://127.0.0.1:8000/newtask/'">New Task</button>
+  <button class="new-task-button" onclick="window.location.href = 'http://127.0.0.1:8000/tasks/new/'">New Task</button>
 
   <!-- Footer -->
   <footer class="w3-content w3-padding-64 w3-text-grey w3-xlarge">

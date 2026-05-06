@@ -70,35 +70,38 @@ async function initPush() {
 
         // Check for old subscription
         let oldSub = await registration.pushManager.getSubscription();
-        if (oldSub) {
-            console.log("⚠️ Unsubscribing old subscription...");
-            await oldSub.unsubscribe();
+        if (!(oldSub)) {
+            console.log("⚠️ No existing subscription... subscribing fresh");
+            //await oldSub.unsubscribe();
+
+
+            // Subscribe with new VAPID key
+            const newSub = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+            });
+
+            console.log("✅ New subscription created:", newSub);
+
+            // Send to backend
+            fetch("/save_subscription/", {
+        method: "POST",
+        body: JSON.stringify(newSub),
+        headers: { "Content-Type": "application/json" }
+        })
+        .then(res => res.json())
+        .then(data => console.log("Subscription saved:", data))
+        .catch(err => console.error("Error saving subscription:", err));
+
+
+                console.log("✅ Subscription sent to backend");
+        }else{
+            console.log("Already subscribtion exists:", oldSub );
         }
-
-        // Subscribe with new VAPID key
-        const newSub = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
-        });
-
-        console.log("✅ New subscription created:", newSub);
-
-        // Send to backend
-        fetch("/save_subscription/", {
-    method: "POST",
-    body: JSON.stringify(subscription),
-    headers: { "Content-Type": "application/json" }
-})
-.then(res => res.json())
-.then(data => console.log("Subscription saved:", data))
-.catch(err => console.error("Error saving subscription:", err));
-
-
-        console.log("✅ Subscription sent to backend");
-
     } catch (err) {
         console.error("❌ Push subscription error:", err);
     }
+    
 }
 
 // Run as soon as page loads
