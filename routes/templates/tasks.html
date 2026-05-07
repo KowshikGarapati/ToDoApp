@@ -176,21 +176,35 @@ function send_location_triggered_notification(task){
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken")  //"{{ csrf_token }}"
+          "X-CSRFToken": getCookie("csrftoken")  
         },
-        credentials: "include",
-        /*body: JSON.stringify({
-          title: "Live Location Alert",
-          message: "Your GPS position has been updated."
-        })*/
+        credentials: "include"
       }).then(response => {
         if (response.ok) {
-          //alert("Notification sent!");
+          alert("Notification sent!");
         } else {
-          //alert("Failed to send notification.");
+          alert("Failed to send notification.");
         }
       });
 }
+
+function send_time_triggered_notification(task){
+    fetch(`/send_time_triggered_notification/${task.id}/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken")
+        },
+        credentials: "include",
+      }).then(response => {
+        if (response.ok) {
+          alert("Notification sent!");
+        } else {
+          alert("Failed to send notification.");
+        }
+      });
+}
+
   const tasks = JSON.parse(
     document.getElementById("tasks-data").textContent 
   );
@@ -202,18 +216,65 @@ if ("geolocation" in navigator) {
           const timestamp = new Date(position.timestamp).toLocaleTimeString();
           
           tasks.forEach(task => {
-            distance = getDistance(latitude, longitude, task.lat, task.lon);
-            if(distance < 200){
-              send_location_triggered_notification(task.id);
-            }
-          })
+
+              const now = new Date();
+
+              const taskDateTime = new Date(`${task.date}T${task.time}`);
+
+              // skip completed tasks
+              if(task.is_completed){
+                  return;
+              }
+
+              // skip expired tasks
+              if(taskDateTime < now){
+                  return;
+              }
+
+              // ---------- TIME NOTIFICATION ----------
+
+              const thirtyMinutes = 30 * 60 * 1000;
+
+              const timeDifference = taskDateTime - now;
+
+              if(
+                  timeDifference > 0 &&
+                  timeDifference <= thirtyMinutes &&
+                  !task.time_notified
+              ){
+                  send_time_triggered_notification(task);
+
+                  task.time_notified = true;
+              }
+
+              // ---------- LOCATION NOTIFICATION ----------
+
+              const distance = getDistance(
+                  latitude,
+                  longitude,
+                  task.lat,
+                  task.lon
+              );
+
+              if(distance < 200 && !task.location_notified){
+
+                  send_location_triggered_notification(task);
+
+                  task.location_notified = true;
+              }
+
+          });
         },
         (err) => {
           console.error("Error watching position:", err);
           status.textContent = "Unable to get location: " + err.message;
           status.style.color = "red";
         },
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+        {
+          enableHighAccuracy: true,
+          maximumAge: 30000,
+          timeout: 15000
+      }
       );
     } else {
       document.getElementById("status").textContent = "Geolocation not supported.";
@@ -265,7 +326,7 @@ if ("geolocation" in navigator) {
       </div>
       <div class="task-actions">
         <button onclick="window.location.href = 'http://127.0.0.1:8000/tasks/edit/{{ task.id }}/'">Edit</button>
-        <button onclick="window.location.href = 'http://127.0.0.1:8000/send_location_triggered_notification/{{ task.id }}/'">Delete</button>
+        <button onclick="window.location.href = 'http://127.0.0.1:8000/tasks/delete/{{ task.id }}/'">Delete</button>
       </div>
     </div>
   {% endfor %}

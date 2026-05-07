@@ -24,8 +24,8 @@ urlpatterns = [
     # Push Notifications
     path("gps/", views.gpstesting, name="gps_test"),
     path("save_subscription/", views.save_subscription, name="save_subscription"),
-    path("send_notification/", views.send_notification, name="send_notification"),
     path("send_location_triggered_notification/<int:task_id>/", views.send_location_triggered_notification, name="send_location_triggered_notification"),
+    path("send_time_triggered_notification/<int:task_id>/", views.send_time_triggered_notification, name="send_time_triggered_notification"),
 
     # Service Worker (IMPORTANT: keep this exact name)
     path("service_worker.js", views.service_worker, name="service_worker"),

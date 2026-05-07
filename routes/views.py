@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.db import models
 from django.db.models.functions import Cast
+
 from .models import Task, User, PushSubscription
 from .forms import TaskForm
 
@@ -222,47 +223,6 @@ def save_subscription(request):
 # SEND NOTIFICATION
 # =========================
 
-def send_notification(request):
-    """
-    Send notification ONLY to logged-in user's devices
-    """
-    user_id = request.session.get("id")
-
-    if not user_id:
-        return JsonResponse({"error": "Not logged in"}, status=403)
-
-    subscriptions = PushSubscription.objects.filter(user_id=user_id)
-
-    if not subscriptions.exists():
-        return JsonResponse({"error": "No subscriptions"}, status=404)
-
-    payload = {
-        "title": "🚀 Task Reminder",
-        "body": "You have pending tasks!",
-        "icon": "/static/icons/notification.png"
-    }
-
-    for sub in subscriptions:
-        try:
-            webpush(
-                subscription_info={
-                    "endpoint": sub.endpoint,
-                    "keys": {
-                        "p256dh": sub.p256dh,
-                        "auth": sub.auth
-                    }
-                },
-                data=json.dumps(payload),
-                vapid_private_key=VAPID_PRIVATE_KEY,
-                vapid_claims={
-                    "sub": "mailto:your@email.com"
-                }
-            )
-        except WebPushException as e:
-            print(f"Push failed: {e}")
-
-    return JsonResponse({"status": "Notification sent"})
-
 def send_location_triggered_notification(request, task_id):
     user_id = request.session.get("id")
 
@@ -301,6 +261,42 @@ def send_location_triggered_notification(request, task_id):
             print(f"Push failed: {e}")
 
     return JsonResponse({"status": "Notification sent"})
+
+def send_time_triggered_notification(request, task_id):
+
+    task = Task.objects.get(id=task_id)
+
+    payload = {
+        "title": "⏰ Upcoming Task",
+        "body": f"{task.title} starts soon!"
+    }
+
+    subscriptions = PushSubscription.objects.filter(user=task.user)
+
+    for sub in subscriptions:
+
+        webpush(
+            subscription_info={
+                "endpoint": sub.endpoint,
+                "keys": {
+                    "p256dh": sub.p256dh,
+                    "auth": sub.auth
+                }
+            },
+
+            data=json.dumps(payload),
+
+            vapid_private_key=VAPID_PRIVATE_KEY,
+
+            vapid_claims={
+                "sub": "mailto:your@email.com"
+            }
+        )
+
+    task.time_notified = True
+    task.save()
+
+    return JsonResponse({"status": "time notification sent"})
 
 # =========================
 # SERVICE WORKER

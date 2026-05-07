@@ -58,7 +58,11 @@
           status.textContent = "Unable to get location: " + err.message;
           status.style.color = "red";
         },
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+        {
+                enableHighAccuracy: true,
+                maximumAge: 30000,
+                timeout: 15000
+            }
       );
     } else {
       document.getElementById("status").textContent = "Geolocation not supported.";

@@ -17,7 +17,10 @@ class Task(models.Model):
     description = models.TextField(max_length=300)
     lat = models.FloatField()
     lon = models.FloatField()
-
+    is_completed = models.BooleanField(default=False)
+    location_notified = models.BooleanField(default=False)
+    time_notified = models.BooleanField(default=False)
+    is_expired = models.BooleanField(default=False)
 
 class PushSubscription(models.Model):
     """
